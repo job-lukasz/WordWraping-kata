@@ -19,9 +19,28 @@ public class Wrap {
 	private void deleteLastSpaces() {
 		newText = newText.replaceAll(" +$", "");
 	}
+	
+	private void initVariables(String rawText) {
+		words = rawText.split(" ");
+		newText = "";
+		wordIterator = 0;
+		lineWidth = 0;
+	}
+	
+	private boolean isEnoughSpaceForWord(int wordLength) {
+		return lineWidth + wordLength <= maxWidth;
+	}
 
+	private boolean isMoreWords() {
+		return wordIterator < words.length;
+	}
+
+	private boolean isEnoghCharInLine() {
+		return lineWidth >= minWidth;
+	}
+	
 	private void fillLine() {
-		while ((wordIterator < words.length) && (lineWidth + words[wordIterator].length() <= maxWidth)) {
+		while (isMoreWords() && isEnoughSpaceForWord(words[wordIterator].length())) {
 			newText += words[wordIterator] + " ";
 			lineWidth += words[wordIterator].length() + 1;
 			wordIterator++;
@@ -30,12 +49,12 @@ public class Wrap {
 
 	private void wrapSign(String word) {
 		newText += word.substring(0, maxWidth - lineWidth - 1) + "-\n";
-		if (word.substring(maxWidth - lineWidth - 1).length() > maxWidth) {
-			wrapSign(word.substring(maxWidth - lineWidth - 1));
-		} else {
+		if (isEnoughSpaceForWord(word.substring(maxWidth - lineWidth - 1).length())) {
 			newText += word.substring(maxWidth - lineWidth - 1) + " ";
 			lineWidth = word.substring(maxWidth - lineWidth - 1).length() + 1;
 			wordIterator++;
+		} else {
+			wrapSign(word.substring(maxWidth - lineWidth - 1));
 		}
 	}
 
@@ -45,22 +64,19 @@ public class Wrap {
 	}
 
 	public String wrapText(String rawText) {
-		words = rawText.split(" ");
-		newText = "";
-		wordIterator = 0;
-		lineWidth = 0;
+		initVariables(rawText);
 		do {
 			fillLine();
-			if (wordIterator < words.length) {
-				if (lineWidth >= minWidth) {
+			if (isMoreWords()) {
+				if (isEnoghCharInLine()) {
 					newLine();
 				} else {
 					wrapSign(words[wordIterator]);
 				}
 			}
 			deleteLastSpaces();
-		} while (wordIterator < words.length);
-
+		} while (isMoreWords());
 		return newText;
 	}
+
 }
